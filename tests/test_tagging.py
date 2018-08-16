@@ -94,6 +94,33 @@ def test_tagging_twice_allowed_no_value():
     tagger(test_something)
 
 
+def test_tagging_fixture(suite_builder):
+    # pylint: disable=unused-variable
+    @suite_builder.first_file.add_code
+    def __code__():
+        import slash # pylint: disable=redefined-outer-name, reimported
+        @slash.tag('fixture1-tag')
+        @slash.fixture
+        def fixture1():
+            pass
+
+        @slash.tag('fixture2-tag')
+        @slash.fixture
+        def fixture2(fixture1):  # pylint: disable=unused-argument
+            pass
+
+        @slash.tag('test-tag')
+        def test_something(fixture2):  # pylint: disable=unused-argument
+            pass
+
+    path = suite_builder.build().path
+
+    with slash.Session():
+        test = Loader().get_runnables(path)[0]
+        for tag_name in ['fixture1-tag', 'fixture2-tag', 'test-tag']:
+            assert tag_name in test.get_tags()
+
+
 
 # more tags in test_pattern_matching.py
 

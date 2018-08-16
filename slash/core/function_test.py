@@ -16,7 +16,11 @@ class FunctionTest(RunnableTest):
         self._func = function
 
     def get_tags(self):
-        return get_tags(self._func)
+        test_tags = get_tags(self._func)
+        if not nofixtures.is_marked(self._func):
+            for fixture in list(self.get_required_fixture_objects()):
+                test_tags += fixture.get_tags(self._fixture_store)
+        return test_tags
 
     def get_address_in_factory(self):
         return ''

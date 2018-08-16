@@ -75,7 +75,11 @@ class Test(RunnableTest):
         return getattr(self, self._test_method_name)
 
     def get_tags(self):
-        return get_tags(type(self)) + get_tags(getattr(type(self), self._test_method_name))
+        test_tags = get_tags(type(self)) + get_tags(getattr(type(self), self._test_method_name))
+        if not nofixtures.is_marked(self.get_test_function()):
+            for fixture in list(self.get_required_fixture_objects()):
+                test_tags += fixture.get_tags(self._fixture_store)
+        return test_tags
 
     __slash_skipped__ = False
     __slash_skipped_reason__ = None
